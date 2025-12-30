@@ -1,0 +1,142 @@
+Table users {
+  user_id int [pk, increment]
+  username varchar(50) [not null, unique]
+  full_name varchar(120) [not null]
+  email varchar(120) [not null, unique]
+  password_hash varchar(255) [not null]
+  role varchar(20) [not null] // ADMIN / ADVISER / STUDENT
+  is_active boolean [not null, default: true]
+}
+
+Table specializations {
+  specialization_id int [pk, increment]
+  name varchar(80) [not null, unique]
+  description varchar(255)
+}
+
+Table students {
+  user_id int [pk] // 1:1 with users
+  cpr varchar(20) [not null]
+  current_semester int [not null]
+  intake_year int [not null]
+  student_id varchar(30)
+  specialization_id int
+}
+
+Table advisers {
+  user_id int [pk] // 1:1 with users
+  department varchar(80) [not null]
+  office_location varchar(80)
+  staff_id varchar(30) [not null, unique]
+}
+
+Table administrators {
+  user_id int [pk] // 1:1 with users
+  admin_id varchar(30) [not null, unique]
+}
+
+Table courses {
+  course_id varchar(20) [pk] // string in your diagram
+  title varchar(150) [not null]
+  credits int [not null]
+  is_core boolean [not null, default: false]
+}
+
+Table course_offerings {
+  offering_id int [pk, increment]
+  course_id varchar(20) [not null]
+  semester varchar(30) [not null]
+  capacity int [not null]
+  is_open_for_registration boolean [not null, default: true]
+
+  Indexes {
+    (course_id, semester) [unique]
+  }
+}
+
+Table prerequisite_rules {
+  rule_id int [pk, increment]
+  course_id varchar(20) [not null]        // course that has the rule
+  prereq_course_id varchar(20) [not null] // required course
+  min_grade varchar(10)
+  type varchar(20) [not null]             // Prerequisite / Corequisite
+
+  Indexes {
+    (course_id, prereq_course_id, type) [unique]
+  }
+}
+
+Table course_plans {
+  plan_id int [pk, increment]
+  student_user_id int [not null]
+  adviser_user_id int
+  semester varchar(30) [not null]
+  status varchar(30) [not null] // Draft/Submitted/Approved/Rejected/Modified etc.
+}
+
+Table course_plan_items {
+  plan_item_id int [pk, increment]
+  plan_id int [not null]
+  offering_id int [not null]
+  is_eligible boolean [not null, default: false]
+  validation_message varchar(255)
+
+  Indexes {
+    (plan_id, offering_id) [unique]
+  }
+}
+
+Table enrollments {
+  enrollment_id int [pk, increment]
+  student_user_id int [not null]
+  offering_id int [not null]
+  grade varchar(10)
+  status varchar(20) [not null] // Enrolled/Completed/Dropped
+
+  Indexes {
+    (student_user_id, offering_id) [unique]
+  }
+}
+
+Table comments {
+  comment_id int [pk, increment]
+  plan_id int [not null]
+  adviser_user_id int
+  text varchar(600) [not null]
+  created_at datetime [not null]
+}
+
+/* --------------------
+   REFERENCES (FKs)
+   -------------------- */
+
+// 1:1 inheritance style
+Ref: students.user_id > users.user_id
+Ref: advisers.user_id > users.user_id
+Ref: administrators.user_id > users.user_id
+
+// student specialization
+Ref: students.specialization_id > specializations.specialization_id
+
+// courses and offerings
+Ref: course_offerings.course_id > courses.course_id
+
+// prerequisite rules (course -> course)
+Ref: prerequisite_rules.course_id > courses.course_id
+Ref: prerequisite_rules.prereq_course_id > courses.course_id
+
+// plans
+Ref: course_plans.student_user_id > students.user_id
+Ref: course_plans.adviser_user_id > advisers.user_id
+
+// plan items
+Ref: course_plan_items.plan_id > course_plans.plan_id
+Ref: course_plan_items.offering_id > course_offerings.offering_id
+
+// enrollments
+Ref: enrollments.student_user_id > students.user_id
+Ref: enrollments.offering_id > course_offerings.offering_id
+
+// comments
+Ref: comments.plan_id > course_plans.plan_id
+Ref: comments.adviser_user_id > advisers.user_id

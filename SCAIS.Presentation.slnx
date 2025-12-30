@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="SCAIS.Business/SCAIS.Business.csproj" Id="7ec535b8-470e-450f-958b-7bea893fb269" />
+  <Project Path="SCAIS.Data/SCAIS.Data.csproj" Id="cb171b75-a2cd-4ae2-8875-9b7030f43e47" />
+  <Project Path="SCAIS.Presentation/SCAIS.Presentation.csproj" Id="0ecb0ffe-e60f-4fb8-bb14-c08ec1ea3455" />
+</Solution>
